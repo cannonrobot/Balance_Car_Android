@@ -1,0 +1,37 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+        <com.lb.cannonrobot.RockerView
+            android:id="@+id/rockerView1"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="0dp"
+            android:layout_marginBottom="0dp"/>
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:padding="10dp"
+        android:text="遥控开关"
+        android:id="@+id/switch_Remote"
+        android:onClick="onClick"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="遥控模式"
+        android:textOff="普通"
+        android:textOn="朝向"
+        android:onClick="onClick"
+        android:id="@+id/switch_Turnmode"
+        android:layout_below="@+id/switch_Remote"
+        android:layout_alignParentStart="true" />
+
+</RelativeLayout>
