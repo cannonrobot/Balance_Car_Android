@@ -2,8 +2,15 @@ package com.lb.cannonrobot;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
@@ -20,6 +27,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.view.View.OnClickListener;
@@ -33,6 +41,16 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity  implements OnClickListener {
+
+    public static final String ACTION_MUSIC_MODE         =    "com.lb.cannonrobot.ACTION_MUSIC_MODE";
+    public static final String ACTION_MUSIC_VOLUME         =    "com.lb.cannonrobot.ACTION_MUSIC_VOLUME";
+    public static final String ACTION_PARAMETER_MODIFY         =    "com.lb.cannonrobot.ACTION_PARAMETER_MODIFY";
+    public static final String ACTION_PARAMETER_MODIFY_ACK         =    "com.lb.cannonrobot.ACTION_PARAMETER_MODIFY_ACK";
+    public static final String ACTION_PARAMETER_ORIGIN        =    "com.lb.cannonrobot.ACTION_PARAMETER_ORIGIN";
+    public static final String ACTION_REMOTE_CONTROL         =    "com.lb.cannonrobot.ACTION_REMOTE_CONTROL";
+    public static final String ACTION_REMOTE_MODE        =    "com.lb.cannonrobot.ACTION_REMOTE_MODE";
+    public static final String ACTION_REMOTE_SEND       =    "com.lb.cannonrobot.ACTION_REMOTE_SEND";
+
 
     private FragmentTab1 messageFragment;
     private FragmentTab2 contactsFragment;
@@ -57,11 +75,18 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
     private HashMap<UUID, JumaDevice> deviceList =  new HashMap<UUID, JumaDevice>();
     public static final String ACTION_DEVICE_DISCOVERED = "com.example.temperaturegatheringdemo.ACTION_DEVICE_DISCOVERED";
     public Toolbar toolbar;
-    private TextView topdisplay;
+    public static TextView topdisplay;
+    private TextView topdisplay2;
+    private TextView topdisplay3;
+    private TextView topdisplay4;
     private int temp=0;
     private RockerView rockerView;
     private byte[] rcsend= new byte[2];
     static public Handler handler = new Handler();
+    byte[] sendbytesplay= new byte[4];
+    boolean isPlayMusic=false;
+    public static  boolean Remote_Flag=false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,8 +99,21 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
             window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
           //  window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
         }
+        IntentFilter sendFilter = new IntentFilter();
+        sendFilter.addAction(ACTION_MUSIC_MODE);
+        sendFilter.addAction(ACTION_MUSIC_VOLUME);
+        sendFilter.addAction(ACTION_PARAMETER_MODIFY);
+        sendFilter.addAction(ACTION_PARAMETER_MODIFY_ACK);
+        sendFilter.addAction(ACTION_PARAMETER_ORIGIN);
+        sendFilter.addAction(ACTION_REMOTE_CONTROL);
+        sendFilter.addAction(ACTION_REMOTE_MODE);
+        sendFilter.addAction(ACTION_REMOTE_SEND);
+        registerReceiver(sendReceiver, sendFilter);
+
 
         topdisplay=(TextView)findViewById(R.id.top_display);
+        topdisplay2=(TextView)findViewById(R.id.top_display2);
+        topdisplay3=(TextView)findViewById(R.id.top_display3);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setLogo(R.drawable.ic_signal_0_bar_24dp);
@@ -84,17 +122,60 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
 
         setSupportActionBar(toolbar);
         toolbar.setOnMenuItemClickListener(onMenuItemClick);
+       // FragmentTab3.mseekBarVolume=(SeekBar)findViewById(R.id.seekBarVolume);
+
         initViews();
         fragmentManager = getFragmentManager();
         setTabSelection(0);
         scanDevice();
+
+
     }
+
+
+    private BroadcastReceiver sendReceiver =new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action =intent.getAction();
+            String tempString;
+            short tempshort;
+            byte[] sendbytesBroadcast= new byte[18];
+
+            Log.e("lb","play2");
+            if(ACTION_REMOTE_CONTROL.equals(action)){
+
+            }
+            else if(ACTION_MUSIC_VOLUME.equals(action)){
+
+                byte msg=intent.getByteExtra("msg", (byte) 0);
+                sendbytesBroadcast[0] = 0x03;//ID
+
+                sendbytesBroadcast[1] =(byte)((10-msg)*6);
+                 System.out.println(msg);
+                sendbytesBroadcast[2] =(byte)( sendbytesBroadcast[1]+sendbytesBroadcast[0] );
+                if (myDevice != null && myDevice.isConnected()) {
+                    myDevice.send((byte) 0x01, sendbytesBroadcast);
+                }
+            }
+            else if(ACTION_MUSIC_MODE.equals(action)){
+
+              //  Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+            }
+            else if(ACTION_REMOTE_CONTROL.equals(action)){
+
+            }
+        }
+    };
+
     static public Runnable runnable = new Runnable() {
-        byte[] sendbytesremote= new byte[6];
+        byte[] sendbytesremote= new byte[13];
+        short[] shorts=new short[1];
+        int temp;
         @Override
         public void run() {
             try {
                 handler.postDelayed(this, 110);
+                myDevice.getRemoteRssi();//获取RSSI在回调函数中
                 sendbytesremote[0]=1;//遥控数据ID
                 sendbytesremote[1]=FragmentTab1.RockerValue[0];
                 sendbytesremote[2]=FragmentTab1.RockerValue[1];;
@@ -102,10 +183,27 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
                     sendbytesremote[3]=1;
                 else  sendbytesremote[3]=0;
 
-                sendbytesremote[4]=0;
-                sendbytesremote[5]=(byte)(sendbytesremote[0]+sendbytesremote[1]+sendbytesremote[2]+sendbytesremote[3]+sendbytesremote[4]);
-                if(myDevice != null && myDevice.isConnected()) {
-                    myDevice.send((byte) 0x01, sendbytesremote);
+                if(FragmentTab1.isOriTurnmodeSwitch)
+                sendbytesremote[4]=1;
+                else sendbytesremote[4]=0;
+                shorts[0]=(short)FragmentTab1.Yaw;
+                for(int i=0;i<2;i++){
+                    sendbytesremote[i+5]=(byte)(shorts[i/2]>>(8-(i%2)*8));
+                }
+                sendbytesremote[7]=0;//舵机控制
+                sendbytesremote[8]=0;
+                sendbytesremote[9]=0;
+                sendbytesremote[10]=0;
+                sendbytesremote[11]=0;
+                temp=0;
+                for(int i=0;i<12;i++){
+                    temp+=sendbytesremote[i];
+                }
+                sendbytesremote[12]=(byte)temp;
+                if(Remote_Flag) {
+                    if (myDevice != null && myDevice.isConnected()) {
+                        myDevice.send((byte) 0x01, sendbytesremote);
+                    }
                 }
                // System.out.println(111);
                 //  }
@@ -132,6 +230,7 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
             }
         });
     }
+
     private Toolbar.OnMenuItemClickListener onMenuItemClick = new Toolbar.OnMenuItemClickListener() {
         @Override
         public boolean onMenuItemClick(MenuItem menuItem) {
@@ -191,8 +290,8 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
                       //  getSupportActionBar().setTitle(myDevice.getName() + " is connect");
                         toolbar.setLogo(R.drawable.ic_signal_5_bar_24dp);
                         topdisplay.setText("连接成功");
-                     //   handler.postDelayed(runnable,110);//开启周期性的发送遥控数据
-                        FragmentTab1.remoteSwitch.setChecked(true);
+                        handler.postDelayed(runnable, 110);//开启周期性的定时
+                      //  FragmentTab1.remoteSwitch.setChecked(true);
                     }
 
                 });
@@ -205,7 +304,7 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
                       //  getSupportActionBar().setTitle(myDevice.getName() + " is disconnect");
                         toolbar.setLogo(R.drawable.ic_signal_0_bar_24dp);
                         topdisplay.setText("断开连接");
-                       // handler.removeCallbacks(runnable);//关闭遥控数据发送
+                        handler.removeCallbacks(runnable);//关闭定时
                         FragmentTab1.remoteSwitch.setChecked(false);
                     }
 
@@ -230,6 +329,9 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
         }
         String s1;
         byte s2;
+        float Voltage;
+        int RSSI;
+        int[] inttemp =new int[2];
         int[] ints=new int[8];
          boolean flag=false;
         @Override
@@ -241,15 +343,20 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
             switch (message[0]){
                 case 0x07:
                 for(int i=0;i<8;i++){
-                    ints[i]=  (((int)message[2*i+1])<<8)+ message[2*i+2];
-                 //   System.out.println(ints[i]);
+                    inttemp[0] = ((message[2*i+1]))<<8;
+                    inttemp[1] =(message[2*i+2]);
+                    if(inttemp[0]<0)inttemp[0]+=256;
+                    if(inttemp[1]<0)inttemp[1]+=256;
+                    ints[i]= inttemp[0]+ inttemp[1];
+
+                   //System.out.println(((message[2*i+1]))<<8);
+                    //System.out.println(message[2*i+2]);
                 }
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             Log.e("onReceive", s2 + " " + s1);
                             FragmentTab2.mDataDisplay.append(s1);
-
                                 FragmentTab2.mDataP1.setText(String.valueOf(ints[0]));
                                 FragmentTab2.mDataP2.setText(String.valueOf(ints[1]));
                                 FragmentTab2.mDataP3.setText(String.valueOf(ints[2]));
@@ -258,7 +365,6 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
                                 FragmentTab2.mDataP6.setText(String.valueOf(ints[5]));
                                 FragmentTab2.mDataP7.setText(String.valueOf(ints[6]));
                                 FragmentTab2.mDataP8.setText(String.valueOf(ints[7]));
-
                         }
                     });
                     break;
@@ -272,11 +378,60 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
                         }
                     });
                     break;
+                case 0x04://电压ID
+                    for(int i=0;i<1;i++){
+                        inttemp[0] = ((message[2*i+1]))<<8;
+                        inttemp[1] =(message[2*i+2]);
+                        if(inttemp[0]<0)inttemp[0]+=256;
+                        if(inttemp[1]<0)inttemp[1]+=256;
+                        ints[i]= inttemp[0]+ inttemp[1];
+                        //System.out.println(((message[2*i+1]))<<8);
+                        //System.out.println(message[2*i+2]);
+                    }
+                    Voltage= (float)ints[0]/100;
+                    System.out.println(Voltage);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            topdisplay2.setText(" 电压：" +(double)ints[0]/100+"V");
+                            if(Voltage<11){
+                                topdisplay.setText("电压过低");
+
+                            }
+                            else{
+                                topdisplay.setText(" ");
+                            }
+                        }
+                    });
+                    break;
             }
-
         }
-
-
+        @Override
+        public void onRemoteRssi(int status, int rssi){
+            if(status==0){
+                RSSI=rssi;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (RSSI != 127) {//不明白为何RSSI会总是出现127这个数字
+                         //   System.out.println(RSSI);
+                        topdisplay3.setText(" RSSI：" + String.valueOf(RSSI));
+                        if (RSSI < -100) {
+                            toolbar.setLogo(R.drawable.ic_signal_1_bar_24dp);
+                        } else if (RSSI < -90) {
+                            toolbar.setLogo(R.drawable.ic_signal_2_bar_24dp);
+                        } else if (RSSI < -80) {
+                            toolbar.setLogo(R.drawable.ic_signal_3_bar_24dp);
+                        } else if (RSSI < -70) {
+                            toolbar.setLogo(R.drawable.ic_signal_4_bar_24dp);
+                        } else {
+                            toolbar.setLogo(R.drawable.ic_signal_5_bar_24dp);
+                        }
+                    }
+                }
+            });
+            }
+        }
     };
 
     @Override
@@ -360,6 +515,50 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
                     Toast.makeText(MainActivity.this, "蓝牙未连接", Toast.LENGTH_SHORT).show();
                 }
                 break;
+            case R.id.btnPlayPrevious:
+                sendbytesplay[0] = 0x02;//ID
+                sendbytesplay[1] = 5;//上一首
+                sendbytesplay[2] =(byte)( sendbytesplay[1]+sendbytesplay[0] );
+                if (myDevice != null && myDevice.isConnected()) {
+                    myDevice.send((byte) 0x01, sendbytesplay);
+                }
+
+                break;
+
+            case R.id.btnPlayPlay:
+
+                if (isPlayMusic) {
+                    sendbytesplay[1] = 2;//停止
+                    isPlayMusic = false;
+                    FragmentTab3.mbtnPlayPlay.setImageResource(R.drawable.btn_playback_play);
+                } else {
+                    sendbytesplay[1] = 1;//播放
+                    isPlayMusic = true;
+                    FragmentTab3.mbtnPlayPlay.setImageResource(R.drawable.btn_playback_pause);
+                }
+                sendbytesplay[0] = 0x02;//ID
+                sendbytesplay[2] =(byte)( sendbytesplay[1]+sendbytesplay[0] );
+                if (myDevice != null && myDevice.isConnected()) {
+                    myDevice.send((byte) 0x01, sendbytesplay);
+                }
+                break;
+            case R.id.btnPlayNext:
+                sendbytesplay[0] = 0x02;//ID
+                sendbytesplay[1] = 6;//下一首
+                sendbytesplay[2] =(byte)( sendbytesplay[1]+sendbytesplay[0] );
+                if (myDevice != null && myDevice.isConnected()) {
+                    myDevice.send((byte) 0x01, sendbytesplay);
+                }
+                break;
+            case R.id.btnPlayRepeat:
+                sendbytesplay[0] = 0x02;//ID
+                sendbytesplay[1] = 7;
+                sendbytesplay[2] =(byte)( sendbytesplay[1]+sendbytesplay[0] );
+                if (myDevice != null && myDevice.isConnected()) {
+                    myDevice.send((byte) 0x01, sendbytesplay);
+                }
+                break;
+
             case R.id.message_layout:
                 // 当点击了消息tab时，选中第1个tab
                 setTabSelection(0);
@@ -434,7 +633,7 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
                 }
                 break;
             case 2:
-
+                FragmentTab1.remoteSwitch.setChecked(false);
                 newsImage.setImageResource(R.drawable.news_selected);
                 newsText.setTextColor(Color.WHITE);
                 if (newsFragment == null) {

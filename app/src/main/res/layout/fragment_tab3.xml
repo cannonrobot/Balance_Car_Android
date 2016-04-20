@@ -3,17 +3,73 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:orientation="vertical" >
-
-        <TextView
+        android:padding="5dp"
+        android:layout_above="@+id/PlayerLayout"
+        android:orientation="horizontal"
+        android:id="@+id/linearLayout2">
+        <ImageButton
+            android:id="@+id/btnPlayRepeat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:padding="10dp"
-            android:text="这是连接界面"
-            android:textSize="20sp" />
+            android:onClick="onClick"
+            android:padding="5dp"
+            android:background="?android:selectableItemBackground"
+            android:src="@drawable/btn_playback_repeat"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_action_volume_on"/>
+        <SeekBar
+            android:id="@+id/seekBarVolume"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:layout_weight="1"
+            android:max="10"
+            android:progress="5"
+            />
+
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_alignParentBottom="true"
+        android:padding="5dp"
+        android:orientation="horizontal"
+        android:id="@+id/PlayerLayout">
+        <ImageButton
+            android:id="@+id/btnPlayPrevious"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onClick"
+            android:padding="5dp"
+            android:background="?android:selectableItemBackground"
+            android:src="@drawable/btn_playback_previous"/>
+        <ImageButton
+            android:id="@+id/btnPlayPlay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onClick"
+            android:padding="5dp"
+            android:background="?android:selectableItemBackground"
+            android:src="@drawable/btn_playback_play"/>
+        <ImageButton
+            android:id="@+id/btnPlayNext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onClick"
+            android:padding="5dp"
+            android:background="?android:selectableItemBackground"
+            android:src="@drawable/btn_playback_next"/>
+    </LinearLayout>
+
+
+
 </RelativeLayout>

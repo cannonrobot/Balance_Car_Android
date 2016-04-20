@@ -26,12 +26,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="10dp"
-        android:text="遥控模式"
+        android:text="转向模式"
         android:textOff="普通"
         android:textOn="朝向"
         android:onClick="onClick"
         android:id="@+id/switch_Turnmode"
         android:layout_below="@+id/switch_Remote"
         android:layout_alignParentStart="true" />
-
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="控制模式"
+        android:textOff="摇杆"
+        android:textOn="姿态"
+        android:onClick="onClick"
+        android:id="@+id/switch_OriTurnmode"
+        android:layout_below="@+id/switch_Turnmode"
+        android:layout_alignParentStart="true" />
 </RelativeLayout>
