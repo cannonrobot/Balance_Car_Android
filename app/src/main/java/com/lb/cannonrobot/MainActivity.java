@@ -97,8 +97,12 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-          //  window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+        //    window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);//透明化导航栏
         }
+      //  View decorView=getWindow().getDecorView();//隐藏导航栏
+      //  int uiOptions=View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+      //  decorView.setSystemUiVisibility(uiOptions);
+
         IntentFilter sendFilter = new IntentFilter();
         sendFilter.addAction(ACTION_MUSIC_MODE);
         sendFilter.addAction(ACTION_MUSIC_VOLUME);
@@ -190,9 +194,9 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
                 for(int i=0;i<2;i++){
                     sendbytesremote[i+5]=(byte)(shorts[i/2]>>(8-(i%2)*8));
                 }
-                sendbytesremote[7]=0;//舵机控制
-                sendbytesremote[8]=0;
-                sendbytesremote[9]=0;
+                sendbytesremote[7]=FragmentTab1.SteerValue[0];;//舵机控制
+                sendbytesremote[8]=FragmentTab1.SteerValue[1];
+                sendbytesremote[9]=FragmentTab1.SteerValue[2];
                 sendbytesremote[10]=0;
                 sendbytesremote[11]=0;
                 temp=0;
@@ -518,7 +522,8 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
             case R.id.btnPlayPrevious:
                 sendbytesplay[0] = 0x02;//ID
                 sendbytesplay[1] = 5;//上一首
-                sendbytesplay[2] =(byte)( sendbytesplay[1]+sendbytesplay[0] );
+                sendbytesplay[2] = 0x00;
+                sendbytesplay[3] =(byte)( sendbytesplay[1]+sendbytesplay[0] );
                 if (myDevice != null && myDevice.isConnected()) {
                     myDevice.send((byte) 0x01, sendbytesplay);
                 }
@@ -537,15 +542,18 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
                     FragmentTab3.mbtnPlayPlay.setImageResource(R.drawable.btn_playback_pause);
                 }
                 sendbytesplay[0] = 0x02;//ID
-                sendbytesplay[2] =(byte)( sendbytesplay[1]+sendbytesplay[0] );
+                sendbytesplay[2] = 0x00;
+                sendbytesplay[3] =(byte)( sendbytesplay[1]+sendbytesplay[0] );
                 if (myDevice != null && myDevice.isConnected()) {
                     myDevice.send((byte) 0x01, sendbytesplay);
                 }
                 break;
+
             case R.id.btnPlayNext:
                 sendbytesplay[0] = 0x02;//ID
                 sendbytesplay[1] = 6;//下一首
-                sendbytesplay[2] =(byte)( sendbytesplay[1]+sendbytesplay[0] );
+                sendbytesplay[2] = 0x00;
+                sendbytesplay[3] =(byte)( sendbytesplay[1]+sendbytesplay[0] );
                 if (myDevice != null && myDevice.isConnected()) {
                     myDevice.send((byte) 0x01, sendbytesplay);
                 }
@@ -553,12 +561,84 @@ public class MainActivity extends AppCompatActivity  implements OnClickListener 
             case R.id.btnPlayRepeat:
                 sendbytesplay[0] = 0x02;//ID
                 sendbytesplay[1] = 7;
-                sendbytesplay[2] =(byte)( sendbytesplay[1]+sendbytesplay[0] );
+                sendbytesplay[2] = 0x00;
+                sendbytesplay[3] =(byte)( sendbytesplay[1]+sendbytesplay[0] );
                 if (myDevice != null && myDevice.isConnected()) {
                     myDevice.send((byte) 0x01, sendbytesplay);
                 }
                 break;
-
+            case R.id.btnCarID:
+                sendbytesplay[0] = 0x02;//ID
+                sendbytesplay[1] = 0x04;//播放指定文件
+                sendbytesplay[2] = 0x01;
+                sendbytesplay[3] =(byte)(  sendbytesplay[2]+sendbytesplay[1]+sendbytesplay[0] );
+                if (myDevice != null && myDevice.isConnected()) {
+                    myDevice.send((byte) 0x01, sendbytesplay);
+                }
+                break;
+            case R.id.btnCarIDFun:
+                sendbytesplay[0] = 0x02;//ID
+                sendbytesplay[1] = 0x04;//播放指定文件
+                sendbytesplay[2] = 0x02;
+                sendbytesplay[3] =(byte)(  sendbytesplay[2]+sendbytesplay[1]+sendbytesplay[0] );
+                if (myDevice != null && myDevice.isConnected()) {
+                    myDevice.send((byte) 0x01, sendbytesplay);
+                }
+                break;
+            case R.id.btnCarTemp:
+                sendbytesplay[0] = 0x02;//ID
+                sendbytesplay[1] = 0x04;//播放指定文件
+                sendbytesplay[2] = 0x03;
+                sendbytesplay[3] =(byte)(  sendbytesplay[2]+sendbytesplay[1]+sendbytesplay[0] );
+                if (myDevice != null && myDevice.isConnected()) {
+                    myDevice.send((byte) 0x01, sendbytesplay);
+                }
+                break;
+            case R.id.btnCarSongDance:
+                sendbytesplay[0] = 0x02;//ID
+                sendbytesplay[1] = 0x04;//播放指定文件
+                sendbytesplay[2] = 0x04;
+                sendbytesplay[3] =(byte)(  sendbytesplay[2]+sendbytesplay[1]+sendbytesplay[0] );
+                if (myDevice != null && myDevice.isConnected()) {
+                    myDevice.send((byte) 0x01, sendbytesplay);
+                }
+                break;
+            case R.id.btnSong1:
+                sendbytesplay[0] = 0x02;//ID
+                sendbytesplay[1] = 0x04;//播放指定文件
+                sendbytesplay[2] = 0x05;
+                sendbytesplay[3] =(byte)(  sendbytesplay[2]+sendbytesplay[1]+sendbytesplay[0] );
+                if (myDevice != null && myDevice.isConnected()) {
+                    myDevice.send((byte) 0x01, sendbytesplay);
+                }
+                break;
+            case R.id.btnSong2:
+                sendbytesplay[0] = 0x02;//ID
+                sendbytesplay[1] = 0x04;//播放指定文件
+                sendbytesplay[2] = 0x06;
+                sendbytesplay[3] =(byte)(  sendbytesplay[2]+sendbytesplay[1]+sendbytesplay[0] );
+                if (myDevice != null && myDevice.isConnected()) {
+                    myDevice.send((byte) 0x01, sendbytesplay);
+                }
+                break;
+            case R.id.btnSong3:
+                sendbytesplay[0] = 0x02;//ID
+                sendbytesplay[1] = 0x04;//播放指定文件
+                sendbytesplay[2] = 0x07;
+                sendbytesplay[3] =(byte)(  sendbytesplay[2]+sendbytesplay[1]+sendbytesplay[0] );
+                if (myDevice != null && myDevice.isConnected()) {
+                    myDevice.send((byte) 0x01, sendbytesplay);
+                }
+                break;
+            case R.id.btnSong4:
+                sendbytesplay[0] = 0x02;//ID
+                sendbytesplay[1] = 0x04;//播放指定文件
+                sendbytesplay[2] = 0x08;
+                sendbytesplay[3] =(byte)(  sendbytesplay[2]+sendbytesplay[1]+sendbytesplay[0] );
+                if (myDevice != null && myDevice.isConnected()) {
+                    myDevice.send((byte) 0x01, sendbytesplay);
+                }
+                break;
             case R.id.message_layout:
                 // 当点击了消息tab时，选中第1个tab
                 setTabSelection(0);

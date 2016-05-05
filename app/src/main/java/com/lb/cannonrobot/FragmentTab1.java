@@ -1,6 +1,7 @@
 package com.lb.cannonrobot;
 
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -15,6 +16,7 @@ import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.Switch;
 
 public class FragmentTab1 extends Fragment {
@@ -23,7 +25,11 @@ public class FragmentTab1 extends Fragment {
     static public Switch remoteSwitch;
     static public Switch turnmodeSwitch;
     static public Switch oriturnmodeSwitch;
+    static public SeekBar mseekBarHead;
+    static public SeekBar mseekBarLeftHand;
+    static public SeekBar mseekBarRightHand;
     static public byte RockerValue[]={1,0,0,0,0,1};
+    static public byte SteerValue[]={0,0,0,0,0};
     static public boolean isRemoteSwitch;
     static public boolean isTurnmodeSwitch;
     static public boolean isOriTurnmodeSwitch;
@@ -53,7 +59,39 @@ public class FragmentTab1 extends Fragment {
         remoteSwitch=(Switch)view.findViewById(R.id.switch_Remote);
         turnmodeSwitch=(Switch)view.findViewById(R.id.switch_Turnmode);
         oriturnmodeSwitch=(Switch)view.findViewById(R.id.switch_OriTurnmode);
-
+        mseekBarHead=(SeekBar)view.findViewById(R.id.seekBarHead);
+        mseekBarLeftHand=(SeekBar)view.findViewById(R.id.seekBarlefttHand);
+        mseekBarRightHand=(SeekBar)view.findViewById(R.id.seekBarRighttHand);
+        mseekBarHead.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+               @Override
+               public void onStopTrackingTouch(SeekBar seekBar) {}
+              @Override
+             public void onStartTrackingTouch(SeekBar seekBar) {}
+             @Override
+             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                 SteerValue[0]=(byte)(progress-100);
+             }
+         });
+        mseekBarLeftHand.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                SteerValue[1]=(byte)(progress-100);
+            }
+        });
+        mseekBarRightHand.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                SteerValue[2]=(byte)(progress-100);
+            }
+        });
         sm=(SensorManager)getActivity().getSystemService(Context.SENSOR_SERVICE);
         aSensor=sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mSensor=sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);

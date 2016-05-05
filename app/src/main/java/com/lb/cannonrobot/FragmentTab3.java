@@ -28,7 +28,7 @@ public class FragmentTab3 extends Fragment implements OnClickListener {
         mbtnPlayNext=(ImageView)view.findViewById(R.id.btnPlayNext);
         mbtnPlayRepeat=(ImageView)view.findViewById(R.id.btnPlayRepeat);
         mseekBarVolume=(SeekBar)view.findViewById(R.id.seekBarVolume);
-        FragmentTab3.mseekBarVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        mseekBarVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
